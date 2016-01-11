@@ -1,0 +1,110 @@
+#
+# (c) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+title: Network Groups
+type: object
+properties:
+  product:
+    type: object
+    properties:
+      version:
+        type: integer
+    required:
+    - version
+  network-groups:
+    type: array
+    items:
+      type: object
+      properties:
+        name:
+          type: string
+        hostname-suffix:
+          type: string
+        hostname:
+          type: boolean
+        component-endpoints:
+          type: array
+          items:
+            type: string
+        routes:
+          type: array
+          items:
+            type: string
+        load-balancers:
+          type: array
+          items:
+            type: object
+            properties:
+              provider:
+                type: string
+              name:
+                type: string
+              components:
+                type: array
+                items:
+                  type: string
+              roles:
+                type: array
+                items:
+                  type: string
+              cert-file:
+                type:
+                  - string
+                  - object
+              vip-address:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    cert-file:
+                      type: string
+                    ip-address:
+                      type: string
+                    region:
+                      type: string
+        tags:
+          type: array
+          items:
+            type:
+            - object
+            - string
+            properties:
+              neutron.networks.vlan:
+                type: object
+                properties:
+                  provider-physical-network:
+                    type: string
+                  tenant-vlan-id-range:
+                    type: string
+                required:
+                - provider-physical-network
+              neutron.networks.flat:
+                type: object
+                properties:
+                  provider-physical-network:
+                    type: string
+                required:
+                - provider-physical-network
+              neutron.networks.vxlan:
+                type: object
+                properties:
+                  tenant-vxlan-id-range:
+                    type: string
+      required:
+      - name
+required:
+- product
+- network-groups
+

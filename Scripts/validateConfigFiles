@@ -1,0 +1,164 @@
+#!/usr/bin/python
+#
+# (c) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+import sys
+import os
+
+import simplejson as json
+import yaml
+
+
+SUCCESS = 0
+FAILURE = -1
+
+NUM_PASS = 0
+NUM_FAIL = 0
+
+
+def main():
+    return_value = SUCCESS
+
+    base_dir = find_top()
+    if not base_dir:
+        print ('Cannot figure out where I am in the source tree.')
+        return FAILURE
+
+    print ('Executing from %s' % base_dir)
+    os.chdir(base_dir)
+
+    data_base_dir = os.path.join(base_dir, 'Data')
+    for dir in ['Site', 'Cloud']:
+        data_dir = os.path.join(data_base_dir, dir)
+        for root, dirs, files in os.walk(data_dir):
+            for f in files:
+                file_name = os.path.join(root, f)
+
+                if file_name.find('old') != -1:
+                    continue
+
+                return_value = process_file(file_name, return_value)
+
+    return return_value
+
+
+def find_top():
+    cur_dir = os.getcwd()
+
+    while '.gitreview' not in os.listdir(cur_dir):
+        cur_dir = os.path.dirname(cur_dir)
+        if os.path.abspath(cur_dir) == '/':
+            return None
+
+    return cur_dir
+
+
+def process_file(file_name, return_value):
+    tokens = os.path.splitext(file_name)
+    ext = tokens[1]
+
+    if ext in ['.json']:
+        return process_json(file_name, return_value)
+
+    elif ext in ['.yml', '.yaml']:
+        return process_yaml(file_name, return_value)
+
+    else:
+        return return_value
+
+
+def process_json(file_name, return_value):
+    try:
+        fp = open(file_name, 'r')
+    except (OSError, IOError) as e:
+        print_fail(file_name, e)
+        return FAILURE
+
+    lines = fp.readlines()
+    fp.close()
+
+    contents = []
+    for line in lines:
+        comment_start = line.find('#')
+        if comment_start != -1:
+            line = line[0:comment_start]
+            line += '\n'
+
+        contents.append(line)
+
+    try:
+        _ = json.loads(''.join(contents))
+    except (TypeError, ValueError) as e:
+        print_fail(file_name, e)
+        return FAILURE
+
+    print_pass(file_name)
+
+    return return_value
+
+
+def process_yaml(file_name, return_value):
+    try:
+        fp = open(file_name, 'r')
+    except (OSError, IOError, Exception) as e:
+        print_fail(file_name, e)
+        return FAILURE
+
+    lines = fp.readlines()
+    fp.close()
+
+    contents = []
+    for line in lines:
+        comment_start = line.find('#')
+        if comment_start != -1:
+            line = line[0:comment_start]
+            line += '\n'
+
+        contents.append(line)
+
+    try:
+        _ = yaml.load(''.join(contents))
+    except (TypeError, ValueError, Exception) as e:
+        print_fail(file_name, e)
+        return FAILURE
+
+    print_pass(file_name)
+
+    return return_value
+
+
+def print_fail(file_name, msg):
+    global NUM_FAIL
+
+    print ('FAIL: %s (%s)' % (file_name, msg))
+    NUM_FAIL += 1
+
+
+def print_pass(file_name):
+    global NUM_PASS
+
+    print ('PASS: %s' % file_name)
+    NUM_PASS += 1
+
+
+if __name__ == '__main__':
+    status = main()
+
+    print ('')
+    print ('%d files parsed successfully' % NUM_PASS)
+    print ('%d files failed to parse' % NUM_FAIL)
+    print ('')
+
+    sys.exit(status)

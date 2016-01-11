@@ -1,0 +1,289 @@
+#
+# (c) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+title: Cloud Configuration for Swift
+type: "object"
+properties:
+    product:
+      type: "object"
+      properties:
+        version:
+          type: "integer"
+      required:
+        - "version"
+    ring-specifications:
+      title: "Swift Cloud Rings"
+      description: A list of all rings in the cloud
+      type: "array"
+      items:
+        -
+          title: Swift Region Rings
+          description: A list of rings in a region
+          type: "object"
+          properties:
+            region-name:
+              title: Keystone region name
+              type: "string"
+
+            swift-regions:
+              title: Rack to swift-region mapping
+              description: >
+                     The swift-regions key allows you to specify
+                     multiple swift-regions in the rings. Optional. If
+                     not present, the swift-region value defaults to 1.
+
+                     The attribute applies to all rings specified in
+                     this Keysone region. (i.e., all rings have a
+                     consistent view of Swift regions).
+              type: "array"
+              items:
+                -
+                  title: Region/Rack mapping
+                  description: Rack to swift-region map
+                  type: "object"
+                  properties:
+                    rack-ids:
+                      title: List of rack ids
+                      type: "array"
+                      items:
+                        - anyOf:
+                           -
+                            type:
+                             - "string"
+                             - "integer"
+                    id:
+                      title: Swift Region number/id
+                      type: "integer"
+                  required:
+                    - "rack-ids"
+                    - "id"
+            swift-zones:
+              title: Rack to swift-zone mapping
+              description: >
+                     The swift-zones key allows you to specify
+                     multiple swift-zones in the rings. Optional. If
+                     not present, the swift-zone value defaults to 1
+                     (i.e. add drives are in one zone).
+
+                     The attribute applies to all rings specified in
+                     this Keysone region. (i.e., all rings have a
+                     consistent view of Swift zones).
+              type: "array"
+              items:
+                -
+                  title: Zone/Rack mapping
+                  description: Rack to swift-zone map
+                  type: "object"
+                  properties:
+                    rack-ids:
+                      title: List of rack ids
+                      type: "array"
+                      items:
+                        - anyOf:
+                           -
+                            type:
+                             - "string"
+                             - "integer"
+                    id:
+                      title: Swift Zone number/id
+                      type: "integer"
+                  required:
+                    - "rack-ids"
+                    - "id"
+            rings:
+              title: List of rings
+              description: >
+                    An array containing the specification of each ring
+                    in the system.
+
+              type: "array"
+              items:
+                -
+                  title: Ring Specification
+                  type: "object"
+                  properties:
+
+                    replication-policy:
+                      title: Attributes of replication policy type
+                      description: >
+                            This object specifies that this ring
+                            use the replication policy type. The
+                            account and container rings must use
+                            type policy type. Object rings can use
+                            this policy or use erase-coding-policy.
+                      type: "object"
+                      properties:
+                            replica-count:
+                              title: Replication count
+                              description: >
+                                             The number of replicas (copies) of an
+                                             object to make. Usually, a value of 3
+                                             should be used. Only use a different
+                                             value after careful evaluation and
+                                             analysis of your needs.
+                              type: "integer"
+                      required:
+                        - replica-count
+
+                    name:
+                      title: Ring name
+                      description: >
+                                     The name of the ring. The name must be
+                                     account, container, or object-N.
+                                     For object rings (storage policies), the
+                                     object-0 item must exist.
+                      type: "string"
+
+                    partition-power:
+                      title: Partition power
+                      description: This is the partition power of the ring.
+                      type: "integer"
+
+                    display-name:
+                      title: Storage policy name
+                      description: >
+                                     This is the end-user visible name of the
+                                     storage policy for object rings.
+
+                                     For the account and container rings, this
+                                     is simply descriptive and not used by
+                                     Swift.
+                      type: "string"
+
+                    replication-network-group:
+                      title: Replication network group
+                      description: >
+                                     If specified, this causes Swift to use a different network
+                                     to perform replication than the network specified in
+                                     server-network-group. Optional. Defaults
+                                     no replication network.
+                      type:
+                       - "string"
+                       - "null"
+                    replication-bind-port:
+                      title: Replicaiton bind port
+                      description: >
+                                     Required when replication-network-group is specified.
+                                     Specifies the port used for replication.
+                      type: "integer"
+
+                    min-part-time:
+                      title: Minimum time between changes
+                      description: >
+                                     The minimum time in hours before a
+                                     rebalance may be performed on this ring
+                                     since the last rebalance. The value is
+                                     specified in hours. The time should be set
+                                     to a value that allows the system to
+                                     complete replication of data.
+                      type: "integer"
+
+                    server-network-group:
+                      title: Server network group
+                      description: >
+                                     The name of the network group that Swift
+                                     proxy, account, container and object
+                                     servers use to communicate with each
+                                     other.
+                      type: "string"
+
+                    server-bind-port:
+                      title: Server bind port
+                      description: >
+                                     Use this option to override the default port. Optional.
+                                     Defaults to a value appropriate to the ring (for example,
+                                     the default for object rings in 6000).
+                      type: integer
+
+                    default:
+                      title: Specifies if this storage policy is default
+                      description: >
+                                     When set to true, specifies that this object ring is the
+                                     default storage policy to use for new containers.
+
+                                     Optional. If not specified, defaults to false. Ignored by
+                                     account and container rings.
+                      type: "boolean"
+
+                    erasure-coding-policy:
+                      title: Attributes of erasure coding policy type
+                      description: >
+                                     The "erasure_coding" policy-type use the following attributes.
+                                     The ec-num-data-fragments and ec-num-parity-fragments
+                                     attributes are used to control the level of redundancy
+                                     and availability of objects in this ring. The values are
+                                     significant to the ec-type in use. For "jerasure_rs_vand"
+                                     an object is stored in ec-num-data-fragments fragments.
+                                     An additional ec-num-parity-fragments parity fragments are
+                                     also stored.
+
+                                     For example, where ec-num-data-fragments is 10 and
+                                     ec-num-parity-fragments parity is 4, at total of 14
+                                     fragments are stored -- this is commonly represented as
+                                     (14,10). To GET an object, any 10 fragments must be available
+                                     in order to reconstruct the object. In space terms, the total
+                                     size of the fragments is 1.4 times the size of the original
+                                     object.
+
+                                     To chose appropriate values for ec-num-data-fragments and
+                                     ec-num-parity-fragments you must balance storage overhead with your
+                                     availability requirements. For example, if you use (14,10) and have
+                                     two swift-zones in the system, if all servers in a zone are
+                                     down, only 7 fragments are available in the remaining zone.
+                                     This is not enough to reconstruct your data and all GET
+                                     operations will fail.
+                      type: "object"
+                      properties:
+                            ec-num-parity-fragments:
+                              title: Number of parity fragments
+                              type: "integer"
+                            ec-object-segment-size:
+                              title: Object segment size
+                              description: >
+                                             Size of object segments (in bytes). Optional. Defaults
+                                             to 1MB. A larger value requires more memory in proxy and
+                                             object servers because this much object data must be kept
+                                             in memory while the erasure coding mechanisms  process
+                                             the data.
+                              type: "integer"
+                            ec-num-data-fragments:
+                              title: Number of data fragments
+                              type: "integer"
+                            ec-type:
+                              title: Erasure coding type
+                              description: >
+                                             Erasure encoding scheme to use. Optional. Defaults to
+                                             jerasure_rs_vand. Currently only jerasure_rs_vand is
+                                             supported.
+                              type: "string"
+                      required:
+                        - ec-num-parity-fragments
+                        - ec-num-data-fragments
+                        - ec-type
+
+                  required:
+                    - name
+                    - display-name
+                    - partition-power
+                    - min-part-time
+
+
+          required:
+            - region-name
+            - rings
+
+required:
+  - "ring-specifications"
+

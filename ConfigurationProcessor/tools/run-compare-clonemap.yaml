@@ -1,0 +1,5 @@
+clonemap:
+ - name: 'hp/kenobi-node-configuration'
+   dest: 'config'
+ - name: 'hp/hlm-input-model'
+   dest: 'hlm-input-model'

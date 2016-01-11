@@ -1,0 +1,190 @@
+#
+# (c) Copyright 2015 Hewlett Packard Enterprise Development Company LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+title: Cloud Diskgroup Configuration
+type: "object"
+properties:
+  product:
+    type: "object"
+    properties:
+      version:
+        type: "integer"
+    required:
+      - "version"
+  disk-models:
+    title: Disk Models
+    description: Array of disk models which describe volume and device groups
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        name:
+          title:  Disk model name
+          description: A disk model defines a set of volume and device groups
+          type: "string"
+        volumes-groups:
+          title: Volume Groups
+          description: Array of volumes groups in this device group.
+          type: "array"
+          items:
+            title: Volume Group
+            Description:  A volume group contains a set of physical and logical volumes
+            type: "object"
+            properties:
+              name:
+                title: Volume group name
+                Description:  Name of the Volume Group Name
+                type: "string"
+              physical-volumes:
+                title: Physical Volumes
+                description:  Array of physical volumes associated with this volume group
+                type: "array"
+                items:
+                  title: A physical Volume
+                  description:  A physical volume describes the device
+                  type: "object"
+                  properties:
+                    device:
+                      type: "string"
+                    mode:
+                      title: Set the root file system mode bits
+                      description: >
+                                   Changes the root file system mode bits, which can be either a symbolic representation
+                                   or an octal number representing of the bit pattern for the new mode bits.
+                      type: "string"
+                  required:
+                    - device
+              logical-volumes:
+                title: Logical Volumes
+                description:  Array of Logical volumes associated with this volume group
+                type: "array"
+                items:
+                  title: Logical Volume
+                  description:  A logical volume
+                  type: "object"
+                  properties:
+                    name:
+                      title: Logical Volume Name
+                      description: The name of this logical volume
+                      type: "string"
+                    mkfs:
+                      title: mkfs directive
+                      description: The mkfs directive allows the specification of different file system types and options.
+                      type: "string"
+                    mode:
+                      title: Set the root file system mode bits
+                      description: >
+                                   Changes the root file system mode bits, which can be either a symbolic representation
+                                   or an octal number representing of the bit pattern for the new mode bits.
+                      type: "string"
+                    mount:
+                      title: Mount Point
+                      description:  The mount point associated with this logical volume.
+                      type: "string"
+                    size:
+                      title: Logical Volume size
+                      description:  The size of this logical volume
+                      type: "string"
+                    consumer:
+                      title: Consumer of the Volume
+                      description: The consumer of this volume for example swift, vsa, os
+                      type: "object"
+                      properties:
+                        name:
+                          title: Consumer Name
+                          description:  The name of the consume of this volume
+                          type: "string"
+                        attrs:
+                          title: Consumer Attributes
+                          description:  >
+                                        These attributes are assocatied with this consumer, for example in the swift case
+                                        a rings attribute might specify which rings are associated with the volume via
+                                        a property of this object which is of array type and lists account, container, object-0
+                          type: "object"
+                      required:
+                        - "name"
+# Swift wants to use its own mount points so mount is currently listed as  optional here, Needs confirmation
+# for swift does this need validation i.e
+# if swift do we want to make sure no mount point supplied?
+                  required:
+                    - "name"
+                    - "size"
+            required:
+              - "name"
+# We  need something like this but this instead of the above but is not working yet
+#            oneOf:
+#             -
+#              required:
+#               - "name"
+#               - "logical-volumes"
+#             -
+#              required:
+#               - "name"
+#               - "physical-volumes"
+        device-groups:
+          title: Device Groups
+          description:  This is a description of the set of devices in this device group
+          type: "array"
+          items:
+            title: Device Group
+            description:  This is a description of a Device Group
+            type: "object"
+            properties:
+              name:
+                title: Device Group Name
+                Description:  The name of the device group. e.g. rootfs, swiftojb
+                type: "string"
+              devices:
+                title: Devices
+                description:  The list of devices associated with this device group
+                type: "array"
+                items:
+                  title: Device Object
+                  description: This is the device object, it has one property, name
+                  type: "object"
+                  properties:
+                    name:
+                      title: Device Name
+                      description:  The name of the device e.g. /dev/sda
+                      type: "string"
+                  required:
+                    - "name"
+              consumer:
+                title: Consumer of the Device Group
+                description: The consumer of this device for example swift, vsa, os
+                type: "object"
+                properties:
+                  name:
+                    title: Consumer Name
+                    description:  The name of the consumer of this device group
+                    type: "string"
+                  attrs:
+                    title: Consumer Attributes
+                    description: >
+                                 These attributes are assocatied with this consumer, for example in the swfit case
+                                 a rings attribute might specify which rings are associated with the
+                    type: "object"
+                required:
+                  - "name"
+            required:
+              - "name"
+              - "devices"
+    # Will alwasy have a volume-groups as this includes the root fs.  disk-groups are optional
+      required:
+        - "name"
+        - "volume-groups"
+required:
+  - "product"
+  - "disk-models"

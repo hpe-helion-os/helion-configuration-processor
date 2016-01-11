@@ -1,0 +1,12 @@
+six
+stevedore
+netaddr
+pycrypto
+cryptography
+simplejson
+sh
+flake8
+pytest
+tox
+pyyaml
+jsonschema
